@@ -4,7 +4,7 @@ from urllib.parse import quote
 import requests
 
 # ----------------------------
-# シークレットから取得
+# シークレット
 # ----------------------------
 SHEET_ID      = st.secrets["SHEET_ID"]
 GAS_ENDPOINT  = st.secrets["GAS_ENDPOINT"]
@@ -25,25 +25,26 @@ def load_sheet(sheet_name: str) -> pd.DataFrame:
 # ----------------------------
 st.title("スプレッドシート管理")
 
-tab1, tab2 = st.tabs(["許可リスト", "アクセス記録"])
+# ここでプレースホルダを作る
+allow_placeholder = st.empty()
+log_placeholder   = st.empty()
 
-with tab1:
+def show_tables():
     df_allow = load_sheet("許可リスト")
-    st.dataframe(df_allow, width='stretch')  # 新仕様に変更
+    df_log   = load_sheet("アクセス記録")
+    allow_placeholder.dataframe(df_allow, width='stretch')
+    log_placeholder.dataframe(df_log, width='stretch')
 
-with tab2:
-    df_log = load_sheet("アクセス記録")
-    st.dataframe(df_log, width='stretch')    # 新仕様に変更
+show_tables()
 
 # ----------------------------
 # 下段：識別コード管理フォーム
 # ----------------------------
 st.header("識別コード管理")
 
-# GASが理解するアクションコード
 action_map = {
     "追加": "add",
-    "編集": "edit",
+    "編集": "update",
     "消去": "delete"
 }
 
@@ -54,7 +55,7 @@ with st.form("manage_code"):
 
     submitted = st.form_submit_button("実行")
     if submitted:
-        gas_action = action_map[action_jp]  # 日本語→GAS向けコードに変換
+        gas_action = action_map[action_jp]
 
         payload = {
             "action": gas_action,
@@ -68,14 +69,16 @@ with st.form("manage_code"):
                 res = r.json()
                 if res.get("status") == "ok":
                     st.success(f"{action_jp} 成功")
+                    # 成功したら表を更新
+                    show_tables()
                 else:
                     st.error(f"{action_jp} 失敗: {res.get('message')}")
             except:
-                # JSON でない場合でも成功メッセージ表示
                 st.success(f"{action_jp} リクエスト送信完了")
+                # JSONでない場合でも表を更新
+                show_tables()
         except Exception as e:
             st.error(f"通信エラー: {e}")
-
 
 
 
