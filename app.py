@@ -9,3 +9,12 @@ name = st.text_input("名前を入力")
 if name:
     st.success(f"こんにちは、{name} さん")
 
+
+SHEET_ID = "17gBzDn7B6eIsNm6gY21dYg6a9_-TSIC3NWuZ06rzWAY"
+SHEET_NAME = "アクセス記録"
+
+url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}"
+
+df = pd.read_csv(url)
+
+st.dataframe(df)
