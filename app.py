@@ -24,3 +24,17 @@ url = (
 df = pd.read_csv(url)
 st.dataframe(df)
 
+
+
+GAS_URL = "https://script.google.com/macros/s/AKfycbw5uEkTQ7mih2FRED8j1uLW8WNWqoiFBKERgdG_5EZCvLeI8OmAEa5Rm0zMAFG9n9Ey/exec"
+
+params = {
+    "mode": "update",
+    "code": "ABC123",                  # A列の識別コード
+    "url": "https://example.com/new"   # 書き換えたいURL
+}
+
+res = requests.get(GAS_URL, params=params)
+
+print(res.status_code)
+print(res.text)
