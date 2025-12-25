@@ -36,5 +36,5 @@ params = {
 
 res = requests.get(GAS_URL, params=params)
 
-print(res.status_code)
-print(res.text)
+st.write(res.status_code)
+st.write(res.text)
