@@ -47,7 +47,7 @@ st.header("識別コード管理")
 
 action_map = {
     "追加": "add",
-    "編集": "edit",
+    "編集": "update",
     "消去": "delete"
 }
 
