@@ -8,7 +8,7 @@ import cv2
 import re
 
 st.set_page_config(layout="wide")
-st.title("QR読み取り＋スプレッドシート管理（OpenCV版）")
+st.title("QR読み取り + スプレッドシート管理（外カメラ対応）")
 
 # ----------------------------
 # シークレット
@@ -25,40 +25,45 @@ if "qr_records" not in st.session_state:
 # ----------------------------
 # QR読み取り
 # ----------------------------
-st.header("QRコード読み取り（OpenCV版）")
-img_file = st.camera_input("QRコードを撮影")
+st.header("QRコード読み取り（ボタン押しで外カメラ起動）")
 
-if img_file is not None:
-    img = Image.open(img_file)
-    st.image(img, caption="撮影画像", use_column_width=True)
+if st.button("カメラ起動"):
+    img_file = st.camera_input("QRコードを撮影", camera="environment")
+    if img_file is not None:
+        img = Image.open(img_file)
+        st.image(img, caption="撮影画像", use_column_width=True)
 
-    # PIL -> OpenCV
-    cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        detector = cv2.QRCodeDetector()
 
-    # QRCode解析
-    detector = cv2.QRCodeDetector()
-    data, bbox, _ = detector.detectAndDecode(cv_img)
+        # 元画像で解析
+        data, bbox, _ = detector.detectAndDecode(cv_img)
 
-    if data:
-        st.success(f"読み取り結果: {data}")
-        # 識別コード抽出
-        match_code = re.search(r"[?&]p=([^&]+)", data)
-        code = match_code.group(1) if match_code else ""
-        st.write(f"識別コード: {code}")
+        # 白色QR対応：反転して再解析
+        if not data:
+            cv_img_inv = cv2.bitwise_not(cv_img)
+            data, bbox, _ = detector.detectAndDecode(cv_img_inv)
 
-        # 日付抽出
-        match_date = re.search(r"[?&]date=([\d-]+)", data)
-        date = match_date.group(1) if match_date else ""
-        st.write(f"日付: {date}")
+        if data:
+            st.success(f"読み取り結果: {data}")
+            # 識別コード抽出
+            match_code = re.search(r"[?&]p=([^&]+)", data)
+            code = match_code.group(1) if match_code else ""
+            st.write(f"識別コード: {code}")
 
-        # セッションに追加
-        st.session_state.qr_records.append({
-            "識別コード": code,
-            "日付": date,
-            "URL": data
-        })
-    else:
-        st.warning("QRコードが検出できませんでした")
+            # 日付抽出
+            match_date = re.search(r"[?&]date=([\d-]+)", data)
+            date = match_date.group(1) if match_date else ""
+            st.write(f"日付: {date}")
+
+            # セッションに追加
+            st.session_state.qr_records.append({
+                "識別コード": code,
+                "日付": date,
+                "URL": data
+            })
+        else:
+            st.warning("QRコードが検出できませんでした")
 
 # ----------------------------
 # QR結果表
@@ -118,5 +123,3 @@ with st.form("manage_code"):
                 show_tables()
         except Exception as e:
             st.error(f"GAS通信エラー: {e}")
-
-
