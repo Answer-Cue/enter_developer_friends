@@ -2,13 +2,9 @@ import streamlit as st
 import pandas as pd
 import requests
 from urllib.parse import quote
-from PIL import Image
-import numpy as np
-import cv2
-import re
 
 st.set_page_config(layout="wide")
-st.title("QR読み取り + スプレッドシート管理（外カメラ対応）")
+st.title("スプレッドシート管理")
 
 # ----------------------------
 # シークレット
@@ -17,67 +13,9 @@ SHEET_ID     = st.secrets["SHEET_ID"]
 GAS_ENDPOINT = st.secrets["GAS_ENDPOINT"]
 
 # ----------------------------
-# データ保持
+# スプレッドシート表示
 # ----------------------------
-if "qr_records" not in st.session_state:
-    st.session_state.qr_records = []
-
-# ----------------------------
-# QR読み取り
-# ----------------------------
-st.header("QRコード読み取り（ボタン押しで外カメラ起動）")
-
-if st.button("カメラ起動"):
-    img_file = st.camera_input("QRコードを撮影")
-    if img_file is not None:
-        st.image(img_file, caption="撮影画像", use_column_width=True)
-
-
-        cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-        detector = cv2.QRCodeDetector()
-
-        # 元画像で解析
-        data, bbox, _ = detector.detectAndDecode(cv_img)
-
-        # 白色QR対応：反転して再解析
-        if not data:
-            cv_img_inv = cv2.bitwise_not(cv_img)
-            data, bbox, _ = detector.detectAndDecode(cv_img_inv)
-
-        if data:
-            st.success(f"読み取り結果: {data}")
-            # 識別コード抽出
-            match_code = re.search(r"[?&]p=([^&]+)", data)
-            code = match_code.group(1) if match_code else ""
-            st.write(f"識別コード: {code}")
-
-            # 日付抽出
-            match_date = re.search(r"[?&]date=([\d-]+)", data)
-            date = match_date.group(1) if match_date else ""
-            st.write(f"日付: {date}")
-
-            # セッションに追加
-            st.session_state.qr_records.append({
-                "識別コード": code,
-                "日付": date,
-                "URL": data
-            })
-        else:
-            st.warning("QRコードが検出できませんでした")
-
-# ----------------------------
-# QR結果表
-# ----------------------------
-if st.session_state.qr_records:
-    st.subheader("読み取り結果一覧")
-    df_qr = pd.DataFrame(st.session_state.qr_records)
-    edited_df = st.data_editor(df_qr, num_rows="dynamic")
-    st.session_state.qr_records = edited_df.to_dict("records")
-
-# ----------------------------
-# スプレッドシート管理
-# ----------------------------
-st.header("スプレッドシート管理")
+st.header("スプレッドシート表示")
 
 def load_sheet(sheet_name: str) -> pd.DataFrame:
     encoded = quote(sheet_name)
@@ -96,14 +34,15 @@ def show_tables():
 
 show_tables()
 
+# ----------------------------
+# 識別コード管理フォーム
+# ----------------------------
 st.header("識別コード管理フォーム")
 action_map = {"追加": "add", "編集": "edit", "消去": "delete"}
 
 with st.form("manage_code"):
     action_jp = st.selectbox("操作", ["追加", "編集", "消去"])
-    # QR読み取り結果から初期値選択可能
-    code_list = [r["識別コード"] for r in st.session_state.qr_records]
-    code = st.selectbox("識別コード", options=code_list if code_list else [""])
+    code      = st.text_input("識別コード")
     url_input = st.text_input("URL (追加/編集時のみ)")
 
     submitted = st.form_submit_button("実行")
