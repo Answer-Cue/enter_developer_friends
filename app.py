@@ -28,7 +28,6 @@ if st.button("実行"):
     
     if res["status"] == "ok":
         st.success("成功")
-    ["message"])
 
 
 
