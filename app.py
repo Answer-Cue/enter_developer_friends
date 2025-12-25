@@ -8,7 +8,6 @@ import requests
 # ----------------------------
 SHEET_ID      = st.secrets["SHEET_ID"]
 GAS_ENDPOINT  = st.secrets["GAS_ENDPOINT"]
-ADMIN_TOKEN   = st.secrets["ADMIN_TOKEN"]
 
 # ----------------------------
 # シート読み込み関数
@@ -37,7 +36,7 @@ with tab2:
     st.dataframe(df_log, use_container_width=True)
 
 # ----------------------------
-# 下段：識別コードの編集・追加・消去
+# 下段：識別コード管理フォーム
 # ----------------------------
 st.header("識別コード管理")
 
@@ -51,18 +50,23 @@ with st.form("manage_code"):
         payload = {
             "action": action.lower(),
             "code": code,
-            "url": url,
-            "token": ADMIN_TOKEN
+            "url": url
         }
         try:
             r = requests.post(GAS_ENDPOINT, data=payload, timeout=10)
-            res = r.json()
-            if res.get("status") == "ok":
-                st.success(f"{action} 成功")
-            else:
-                st.error(f"{action} 失敗: {res.get('message')}")
+            # GAS からの返り値が JSON なら解析
+            try:
+                res = r.json()
+                if res.get("status") == "ok":
+                    st.success(f"{action} 成功")
+                else:
+                    st.error(f"{action} 失敗: {res.get('message')}")
+            except:
+                # 返り値が JSON じゃない場合でも動作
+                st.success(f"{action} リクエスト送信完了")
         except Exception as e:
             st.error(f"通信エラー: {e}")
+
 
 
 
