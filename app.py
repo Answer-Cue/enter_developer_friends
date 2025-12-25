@@ -1,12 +1,14 @@
 import streamlit as st
-from PIL import Image
-import pyzbar.pyzbar as pyzbar
-import re
 import pandas as pd
 import requests
 from urllib.parse import quote
+from PIL import Image
+import numpy as np
+import cv2
+import re
 
-st.title("QR読み取り＋スプレッドシート管理")
+st.set_page_config(layout="wide")
+st.title("QR読み取り＋スプレッドシート管理（OpenCV版）")
 
 # ----------------------------
 # シークレット
@@ -23,29 +25,43 @@ if "qr_records" not in st.session_state:
 # ----------------------------
 # QR読み取り
 # ----------------------------
-st.header("QRコード読み取り")
+st.header("QRコード読み取り（OpenCV版）")
 img_file = st.camera_input("QRコードを撮影")
 
 if img_file is not None:
     img = Image.open(img_file)
     st.image(img, caption="撮影画像", use_column_width=True)
 
-    decoded_objects = pyzbar.decode(img)
-    if decoded_objects:
-        for obj in decoded_objects:
-            qr_data = obj.data.decode("utf-8")
-            match_code = re.search(r"[?&]p=([^&]+)", qr_data)
-            code = match_code.group(1) if match_code else ""
-            match_date = re.search(r"[?&]date=([\d-]+)", qr_data)
-            date = match_date.group(1) if match_date else ""
-            st.session_state.qr_records.append({
-                "識別コード": code,
-                "日付": date,
-                "URL": qr_data
-            })
+    # PIL -> OpenCV
+    cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+
+    # QRCode解析
+    detector = cv2.QRCodeDetector()
+    data, bbox, _ = detector.detectAndDecode(cv_img)
+
+    if data:
+        st.success(f"読み取り結果: {data}")
+        # 識別コード抽出
+        match_code = re.search(r"[?&]p=([^&]+)", data)
+        code = match_code.group(1) if match_code else ""
+        st.write(f"識別コード: {code}")
+
+        # 日付抽出
+        match_date = re.search(r"[?&]date=([\d-]+)", data)
+        date = match_date.group(1) if match_date else ""
+        st.write(f"日付: {date}")
+
+        # セッションに追加
+        st.session_state.qr_records.append({
+            "識別コード": code,
+            "日付": date,
+            "URL": data
+        })
+    else:
+        st.warning("QRコードが検出できませんでした")
 
 # ----------------------------
-# 表として表示
+# QR結果表
 # ----------------------------
 if st.session_state.qr_records:
     st.subheader("読み取り結果一覧")
@@ -102,4 +118,5 @@ with st.form("manage_code"):
                 show_tables()
         except Exception as e:
             st.error(f"GAS通信エラー: {e}")
+
 
