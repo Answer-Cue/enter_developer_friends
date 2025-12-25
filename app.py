@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+from urllib.parse import quote
 st.set_page_config(page_title="My App", layout="wide")
 
 st.title("メインWebアプリ")
@@ -12,7 +12,7 @@ if name:
 
 
 SHEET_ID = "17gBzDn7B6eIsNm6gY21dYg6a9_-TSIC3NWuZ06rzWAY"
-SHEET_NAME = "アクセス記録"
+SHEET_NAME = "アクセス記録"  # ← 日本語OK
 
 encoded_sheet_name = quote(SHEET_NAME)
 
@@ -23,3 +23,4 @@ url = (
 
 df = pd.read_csv(url)
 st.dataframe(df)
+
