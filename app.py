@@ -49,6 +49,10 @@ if st.button("実行"):
     }
 
     r = requests.post(ENDPOINT, data=payload, timeout=10)
+    
+    st.write("status:", r.status_code)
+    st.write("text:", r.text)
+
     res = r.json()
 
     if res["status"] == "ok":
