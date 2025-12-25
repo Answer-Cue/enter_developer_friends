@@ -21,13 +21,16 @@ def load_sheet(sheet_name: str) -> pd.DataFrame:
     return pd.read_csv(url)
 
 # ----------------------------
-# 上段：シート内容表示
+# 上段：シート内容表示（横並び）
 # ----------------------------
 st.title("スプレッドシート管理")
 
-# ここでプレースホルダを作る
-allow_placeholder = st.empty()
-log_placeholder   = st.empty()
+# 横に並べるカラムを作成
+col1, col2 = st.columns(2)
+
+# プレースホルダ
+allow_placeholder = col1.empty()
+log_placeholder   = col2.empty()
 
 def show_tables():
     df_allow = load_sheet("許可リスト")
@@ -44,7 +47,7 @@ st.header("識別コード管理")
 
 action_map = {
     "追加": "add",
-    "編集": "update",
+    "編集": "edit",
     "消去": "delete"
 }
 
@@ -75,7 +78,6 @@ with st.form("manage_code"):
                     st.error(f"{action_jp} 失敗: {res.get('message')}")
             except:
                 st.success(f"{action_jp} リクエスト送信完了")
-                # JSONでない場合でも表を更新
                 show_tables()
         except Exception as e:
             st.error(f"通信エラー: {e}")
