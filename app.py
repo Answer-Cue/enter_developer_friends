@@ -29,11 +29,12 @@ tab1, tab2 = st.tabs(["許可リスト", "アクセス記録"])
 
 with tab1:
     df_allow = load_sheet("許可リスト")
-    st.dataframe(df_allow, use_container_width=True)
+    st.dataframe(df_allow, width='stretch')  # ← ここを修正
 
 with tab2:
     df_log = load_sheet("アクセス記録")
-    st.dataframe(df_log, use_container_width=True)
+    st.dataframe(df_log, width='stretch')    # ← ここを修正
+
 
 # ----------------------------
 # 下段：識別コード管理フォーム
