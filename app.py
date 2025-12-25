@@ -33,19 +33,26 @@ st.dataframe(df)
 import streamlit as st
 import requests
 
-st.title("URL 更新")
+ENDPOINT = st.secrets["GAS_ENDPOINT"]
 
+st.title("識別コード管理")
+
+action = st.selectbox("操作", ["add", "update", "delete"])
 code = st.text_input("識別コード")
-url = st.text_input("URL")
+url = st.text_input("URL（delete時は不要）")
 
-if st.button("送信"):
-    r = requests.post(
-        st.secrets["GAS_ENDPOINT"],
-        data={"code": code, "url": url},
-        timeout=10
-    )
+if st.button("実行"):
+    payload = {
+        "action": action,
+        "code": code,
+        "url": url
+    }
 
-    if r.status_code == 200:
-        st.success("送信完了")
+    r = requests.post(ENDPOINT, data=payload, timeout=10)
+    res = r.json()
+
+    if res["status"] == "ok":
+        st.success(f"{res['action']} 完了")
     else:
-        st.error("失敗")
+        st.error(res["message"])
+
