@@ -28,10 +28,10 @@ if "qr_records" not in st.session_state:
 st.header("QRコード読み取り（ボタン押しで外カメラ起動）")
 
 if st.button("カメラ起動"):
-    img_file = st.camera_input("QRコードを撮影", camera="environment")
+    img_file = st.camera_input("QRコードを撮影")
     if img_file is not None:
-        img = Image.open(img_file)
-        st.image(img, caption="撮影画像", use_column_width=True)
+        st.image(img_file, caption="撮影画像", use_column_width=True)
+
 
         cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
         detector = cv2.QRCodeDetector()
