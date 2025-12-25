@@ -14,8 +14,12 @@ if name:
 SHEET_ID = "17gBzDn7B6eIsNm6gY21dYg6a9_-TSIC3NWuZ06rzWAY"
 SHEET_NAME = "アクセス記録"
 
-url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}"
+encoded_sheet_name = quote(SHEET_NAME)
+
+url = (
+    f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq"
+    f"?tqx=out:csv&sheet={encoded_sheet_name}"
+)
 
 df = pd.read_csv(url)
-
 st.dataframe(df)
