@@ -1,5 +1,5 @@
 streamlit
-pillow
-requests
 pandas
-opencv-python
+requests
+pillow
+opencv-python-headless
