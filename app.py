@@ -30,8 +30,8 @@ GAS_URL = "https://script.google.com/macros/s/AKfycbw5uEkTQ7mih2FRED8j1uLW8WNWqo
 
 params = {
     "mode": "update",
-    "code": "ABC123",                  # A列の識別コード
-    "url": "https://example.com/new"   # 書き換えたいURL
+    "code": "pocvxnvdgdt",                  # A列の識別コード
+    "url": "https://itch.io/games"   # 書き換えたいURL
 }
 
 res = requests.get(GAS_URL, params=params)
