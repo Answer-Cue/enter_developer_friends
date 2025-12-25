@@ -26,15 +26,26 @@ st.dataframe(df)
 
 
 
-GAS_URL = "https://script.google.com/macros/s/AKfycbw5uEkTQ7mih2FRED8j1uLW8WNWqoiFBKERgdG_5EZCvLeI8OmAEa5Rm0zMAFG9n9Ey/exec"
 
-params = {
-    "mode": "update",
-    "code": "pocvxnvdgdt",                  # A列の識別コード
-    "url": "https://itch.io/games"   # 書き換えたいURL
-}
 
-res = requests.get(GAS_URL, params=params)
 
-st.write(res.status_code)
-st.write(res.text)
+
+import streamlit as st
+import requests
+
+st.title("URL 更新")
+
+code = st.text_input("識別コード")
+url = st.text_input("URL")
+
+if st.button("送信"):
+    r = requests.post(
+        st.secrets["GAS_ENDPOINT"],
+        data={"code": code, "url": url},
+        timeout=10
+    )
+
+    if r.status_code == 200:
+        st.success("送信完了")
+    else:
+        st.error("失敗")
